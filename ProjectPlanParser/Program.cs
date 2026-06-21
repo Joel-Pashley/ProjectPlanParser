@@ -6,8 +6,6 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<IProjectParserService, ProjectParserService>();
 
@@ -16,9 +14,17 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        // In production, replace with specific origins
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string>() ?? "*";
+        if (allowedOrigins == "*")
+        {
+            policy.AllowAnyOrigin();
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        }
+        
+        policy.AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
@@ -81,11 +87,25 @@ else if (!string.IsNullOrEmpty(licensePath) && File.Exists(licensePath))
     {
         var license = new Aspose.Tasks.License();
         license.SetLicense(licensePath);
-        Console.WriteLine("Aspose.Tasks License file applied.");
+        if (builder.Environment.IsDevelopment())
+        {
+            Console.WriteLine($"[DevMode] Aspose.Tasks License file applied from: {licensePath}");
+        }
+        else
+        {
+            Console.WriteLine("Aspose.Tasks License file applied.");
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Failed to apply Aspose.Tasks License from file: {ex.Message}");
+        if (builder.Environment.IsDevelopment())
+        {
+            Console.WriteLine($"Failed to apply Aspose.Tasks License from file ({licensePath}): {ex.Message}");
+        }
+        else
+        {
+            Console.WriteLine("Failed to apply Aspose.Tasks License from file.");
+        }
     }
 }
 
@@ -182,7 +202,13 @@ app.MapPost("/api/parse", async (HttpContext context,
     catch (Exception ex)
     {
         logger.LogError(ex, "An error occurred while parsing the project file: {FileName}", file.FileName);
-        return Results.Problem($"An error occurred while parsing the project: {ex.Message}");
+        
+        if (context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment())
+        {
+            return Results.Problem($"An error occurred while parsing the project: {ex.Message}. StackTrace: {ex.StackTrace}");
+        }
+        
+        return Results.Problem("An error occurred while parsing the project. Please ensure the file is a valid .mpp file and try again.");
     }
 })
 .WithName("ParseProjectFile")

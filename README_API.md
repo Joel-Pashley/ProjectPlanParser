@@ -54,6 +54,24 @@ To use the full version, configure one of the following:
 - **License Directory**: Place your `.lic` file at `/app/licenses/Aspose.Tasks.lic` (preferred for Docker/CI/CD).
 - **Environment Variable**: Set `ASPOSE_LICENSE_PATH` to the location of your `.lic` file.
 
+## Environment Configurations
+
+The API supports `Development` and `Production` environments with pre-populated options in `appsettings.json` and `appsettings.Development.json`.
+
+### Development
+- **Logging**: Set to `Debug` for detailed output.
+- **CORS**: Allows any origin (`*`) for easier local development.
+- **Error Handling**: Detailed stack traces are returned in API responses.
+- **License**: Provides more detailed console output if license application fails.
+
+### Production
+- **Logging**: Set to `Information` for concise logs.
+- **CORS**: Restricted to a specific domain (default: `https://your-frontend-domain.com`). Update `appsettings.json` with your actual domain.
+- **Error Handling**: Returns generic error messages to avoid leaking internal system details.
+- **License**: Standard success/fail messages.
+
+To switch environments, set the `ASPNETCORE_ENVIRONMENT` environment variable to either `Development` or `Production`.
+
 ### Air-Gapped Deployments
 
 In air-gapped or restricted network environments, **Metered licensing will not work**. You must provide a physical `.lic` file using either the **License Directory** or **Environment Variable** method. These methods perform local validation and do not require any outbound internet connectivity.
