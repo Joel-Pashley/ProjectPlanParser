@@ -138,12 +138,15 @@ app.UseHttpsRedirection();
 app.MapPost("/api/parse", async (HttpContext context,
     IProjectParserService parserService, 
     ILogger<Program> logger,
+    [FromQuery] bool? includeProjectProperties,
     [FromQuery] bool? includeTasks,
     [FromQuery] bool? includeResources,
     [FromQuery] bool? includeAssignments,
     [FromQuery] bool? includeCalendars,
+    [FromQuery] bool? includeTaskLinks,
     [FromQuery] bool? includeTimephased,
-    [FromQuery] bool? includeBaselines) =>
+    [FromQuery] bool? includeBaselines,
+    [FromQuery] bool? includeExtendedAttributes) =>
 {
     var request = context.Request;
     if (!request.HasFormContentType)
@@ -186,12 +189,15 @@ app.MapPost("/api/parse", async (HttpContext context,
 
         var options = new ParseOptions
         {
+            IncludeProjectProperties = includeProjectProperties ?? true,
             IncludeTasks = includeTasks ?? true,
             IncludeResources = includeResources ?? true,
             IncludeAssignments = includeAssignments ?? true,
             IncludeCalendars = includeCalendars ?? true,
+            IncludeTaskLinks = includeTaskLinks ?? true,
             IncludeTimephasedData = includeTimephased ?? true,
-            IncludeBaselines = includeBaselines ?? true
+            IncludeBaselines = includeBaselines ?? true,
+            IncludeExtendedAttributes = includeExtendedAttributes ?? true
         };
 
         logger.LogInformation("Processing file: {FileName} ({Size} bytes)", file.FileName, file.Length);

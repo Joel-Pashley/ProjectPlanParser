@@ -9,6 +9,10 @@
 
     <ItemGroup>
         <PackageReference Include="Aspose.Tasks" Version="26.6.0" />
+        <!-- Aspose.Tasks loads Aspose.Drawing for font/page (header-footer) handling when parsing .mpp files on
+             non-Windows. The transitive reference isn't reliably published, so pin it explicitly to the version
+             Aspose.Tasks 26.6.0 binds to (assembly 26.5.0.0). -->
+        <PackageReference Include="Aspose.Drawing" Version="26.5.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     </ItemGroup>
 
